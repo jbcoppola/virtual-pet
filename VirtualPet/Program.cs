@@ -14,6 +14,7 @@ namespace VirtualPet
 			Dog dog = Adopt();
 			while (input != "quit")
 			{
+				dog.DisplayStats();
 			}
 		}
 
@@ -75,6 +76,13 @@ namespace VirtualPet
 					break;
 			}
 
+			return dog;
+		}
+
+		static Dog Action(Dog dog)
+		{
+			string input = GetInput();
+			switch
 			return dog;
 		}
 	}

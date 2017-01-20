@@ -118,6 +118,43 @@ namespace VirtualPet
 		}
 		
 		//methods
+		public void DisplayStats()
+		{
+			if (Bond > 180)
+			{
+				Console.WriteLine("You are {0}'s sunshine.", Name);
+			}
+			else if (Bond > 140)
+			{
+				Console.WriteLine("You are a very special person to {0}.", Name);
+			}
+			else if (Bond > 100)
+			{
+				Console.WriteLine("{0} loves to cuddle on your lap.", Name);
+			}
+			else if (Bond > 60)
+			{
+				Console.WriteLine("{0} is comfortable around you.", Name);
+			}
+			else if (Bond > 30)
+			{
+				Console.WriteLine("{0} has started to trust you.", Name);
+			}
+			else
+			{
+				Console.WriteLine("{0} doesn't know you very well yet.", Name);
+			}
+			Console.WriteLine();
+
+			Console.WriteLine("Hunger: {0}", Hunger);
+			Console.WriteLine("Thirst: {0}", Thirst);
+			Console.WriteLine("Boredom: {0}", Boredom);
+			Console.WriteLine("Waste: {0}", Waste);
+			Console.WriteLine("Energy: {0}", Energy);
+
+			Console.WriteLine();
+			
+		}
 		//run after every other method to prevent overflow
 		public void CheckConditions()
 		{
