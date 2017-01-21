@@ -45,15 +45,8 @@ namespace VirtualPet
 			Console.WriteLine("3 - Welsh Corgi");
 			Console.WriteLine("4 - Australian Shepard");
 
-			//find which breed the dog is
-			string breed = GetInput();
-
-			//verify
-			while (breed != "1" && breed != "2" && breed != "3" && breed != "4")
-			{
-				Console.WriteLine("Invalid input. Input a number 1-4.");
-				breed = GetInput();
-			}
+			//find which breed the dog is and verify it
+			int breed = VerifyAction(1, 4);
 
 			Console.WriteLine("What is your new best friend's name?");
 			string name = GetInput();
@@ -61,19 +54,19 @@ namespace VirtualPet
 			Dog dog;
 			switch (breed)
 			{
-				case "1":
+				case 1:
 					Console.WriteLine("Labs have medium intelligence, lots of energy, a low maintenence coat and a huge appetite.");
 					dog = new Dog(name, 5, 4, 1, 9);
 					break;
-				case "2":
+				case 2:
 					Console.WriteLine("Goldens have medium intelligence, moderate energy, a high maintence long coat and a large appetite.");
 					dog = new Dog(name, 5, 6, 7, 7);
 					break;
-				case "3":
+				case 3:
 					Console.WriteLine("Corgis are very intelligent, have lots of energy, a short coat and lower appetite.");
 					dog = new Dog(name, 8, 3, 3, 4);
 					break;
-				case "4":
+				case 4:
 					Console.WriteLine("Aussies are extremely intelligent, have boatloads of energy, a high maintenence coat and very large appetite");
 					dog = new Dog(name, 10, 1, 10, 8);
 					break;
@@ -102,46 +95,55 @@ namespace VirtualPet
 		}
 
 		//makes sure they pick the correct range of actions
-		static string VerifyAction(string input)
+		static int VerifyAction(int min, int max)
 		{
-			while (	input != "1" && input != "2" && input != "3" && input != "4" && 
-					input != "5" && input != "6" && input != "7" && input != "8"	)
+			string input = "";
+			int option = min - 1;
+			while (option < min || option > max)
 			{
-				Console.WriteLine("Invalid input. Enter 1-8");
-				input = Console.ReadLine();
+				try
+				{
+					Console.WriteLine("Enter a number between {0} and {1}", min, max);
+					input = GetInput();
+					option = int.Parse(input);
+				}
+				catch(Exception)
+				{
+					Console.WriteLine("Invalid input. Try again.");
+				}
 			}
-			return input;
+			return option;
 		}
 
 		//gets input, verifies it and picks an action to take, then checks the values before returning dog
 		static Dog ActionLoop(Dog dog)
 		{
 			DisplayActionMenu(dog);
-			string input = VerifyAction(GetInput());
+			int input = VerifyAction(1, 8);
 			switch (input)
 			{
-				case "1":
+				case 1:
 					dog.Feed();
 					break;
-				case "2":
+				case 2:
 					dog.GiveWater();
 					break;
-				case "3":
+				case 3:
 					dog.Play();
 					break;
-				case "4":
+				case 4:
 					dog.Brush();
 					break;
-				case "5":
+				case 5:
 					dog.Poop();
 					break;
-				case "6":
+				case 6:
 					dog.Pet();
 					break;
-				case "7":
+				case 7:
 					dog.Sleep();
 					break;
-				case "8":
+				case 8:
 					dog.LearnTrick();
 					break;
 				default:
