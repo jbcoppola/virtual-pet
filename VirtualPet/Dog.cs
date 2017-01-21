@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Timers;
 using System.Threading.Tasks;
 
 namespace VirtualPet
@@ -13,20 +14,25 @@ namespace VirtualPet
 		thirst,					// 0-100, lower is better
 		boredom,				// 0-100, lower is better
 		bond,					// 0-200, higher is better
-		coatShag,				// 0-10, lower is better
+		coatShag,				// 0-100, lower is better
 		coatShagDecayRate,		// 0-10, higher means coat shag increases faster
 		energy,					// 0-100, higher is more energy
 		energyDecayRate,        // 0-10, higher means they get tired faster
 		intelligence,           // 1-10, determines learning rate for tricks and boredom decay rate (smarter dogs get bored faster)
-		waste					// 0-100, lower is better
+		waste,					// 0-100, lower is better
+		tricksLearned,			// 0-8, higher means bond increases faster
+		trickProgress,			// 0-10, keeps track of progress to learning next trick
+		last
 	};
+
 
 	class Dog
 	{
 		//fields
 		private string name;
-		private string breed;
-		private short[] dogValues;
+		private short[] dogValues = new short[(int)DogNeeds.last + 1];
+		private Dictionary<string, bool> dogTricks = new Dictionary<string, bool>();
+		private static Timer needTimer;
 
 		//properties
 		public string Name
@@ -100,24 +106,51 @@ namespace VirtualPet
 			set { dogValues[(int)DogNeeds.waste] = value; }
 		}
 
+		public short TricksLearned
+		{
+			get { return dogValues[(int)DogNeeds.tricksLearned]; }
+			set { dogValues[(int)DogNeeds.tricksLearned] = value; }
+		}
+
+		public short TrickProgress
+		{
+			get { return dogValues[(int)DogNeeds.trickProgress]; }
+			set { dogValues[(int)DogNeeds.trickProgress] = value; }
+		}
+
 		//constructors
 		//conditions vary based on breed
 		public Dog(string name, short intelligence, short energyDecayRate, short coatShagDecayRate, short hungerDecayRate)
 		{
 			this.name = name;
-			this.Hunger = 35;
+			Hunger = 35;
 			this.HungerDecayRate = hungerDecayRate;
-			this.Thirst = 35;
-			this.Boredom = 35;
-			this.Waste = 10;
-			this.CoatShag = 1;
+			Thirst = 35;
+			Boredom = 35;
+			Waste = 10;
+			CoatShag = 1;
 			this.CoatShagDecayRate = coatShagDecayRate;
-			this.Energy = 50;
-			this.Bond = 0;
+			Energy = 50;
+			this.EnergyDecayRate = energyDecayRate;
+			Bond = 0;
 			this.Intelligence = intelligence;
+			TricksLearned = 0;
+			TrickProgress = 10;
+
+			dogTricks = new Dictionary<string, bool>();
+			dogTricks.Add("Sit", false);
+			dogTricks.Add("Stay", false);
+			dogTricks.Add("Down", false);
+			dogTricks.Add("Come", false);
+			dogTricks.Add("Heel", false);
+			dogTricks.Add("Fetch", false);
+			dogTricks.Add("Shake", false);
+			dogTricks.Add("Play dead", false);
 		}
 		
 		//methods
+		
+		//display the current stats for the dog
 		public void DisplayStats()
 		{
 			if (Bond > 180)
@@ -130,7 +163,7 @@ namespace VirtualPet
 			}
 			else if (Bond > 100)
 			{
-				Console.WriteLine("{0} loves to cuddle on your lap.", Name);
+				Console.WriteLine("{0} loves to cuddle with you.", Name);
 			}
 			else if (Bond > 60)
 			{
@@ -144,6 +177,7 @@ namespace VirtualPet
 			{
 				Console.WriteLine("{0} doesn't know you very well yet.", Name);
 			}
+
 			Console.WriteLine();
 
 			Console.WriteLine("Hunger: {0}", Hunger);
@@ -151,11 +185,13 @@ namespace VirtualPet
 			Console.WriteLine("Boredom: {0}", Boredom);
 			Console.WriteLine("Waste: {0}", Waste);
 			Console.WriteLine("Energy: {0}", Energy);
+			Console.WriteLine("Coat shagginess: {0}", CoatShag);
+			Console.WriteLine("Tricks learned: {0}", TricksLearned);
 
 			Console.WriteLine();
-			
 		}
-		//run after every other method to prevent overflow
+
+		//run after every other method to prevent variable overflow
 		public void CheckConditions()
 		{
 			if (Hunger > 100)
@@ -170,13 +206,21 @@ namespace VirtualPet
 			{
 				Boredom = 100;
 			}
-			if (CoatShag > 10)
+			else if (Boredom < 0)
 			{
-				CoatShag = 10;
+				Boredom = 0;
+			}
+			if (CoatShag > 100)
+			{
+				CoatShag = 100;
 			}
 			if (Energy < 0)
 			{
 				Energy = 0;
+			}
+			else if (Energy > 100)
+			{
+				Energy = 100;
 			}
 			if (Bond > 200)
 			{
@@ -195,6 +239,7 @@ namespace VirtualPet
 			Thirst += (short)(Hunger / 3);
 			Energy += 5;
 			Hunger = 0;
+			Console.WriteLine("{0} scarfs down kibble.", Name);
 		}
 
 		//treat thirst
@@ -202,6 +247,7 @@ namespace VirtualPet
 		{
 			Waste += (short)(Thirst / 2);
 			Thirst = 0;
+			Console.WriteLine("{0} laps the water dish.", Name);
 		}
 
 		//treat boredom
@@ -220,14 +266,16 @@ namespace VirtualPet
 			//...but it gets them dirty
 			if (temp > 4)
 			{
-				CoatShag++;
+				CoatShag += CoatShagDecayRate;
 			}
+			Console.WriteLine("{0} romps around the room.", Name);
 		}
 
 		//treat waste
 		public void Poop()
 		{
 			Waste = 0;
+			Console.WriteLine("{0} sniffs an overgrown patch of yard to go in.", Name);
 		}
 
 		//treat coatShag
@@ -237,30 +285,117 @@ namespace VirtualPet
 			int temp = rand.Next(10);
 
 			//most dogs love being brushed
-			if (CoatShag < 5 && temp > 8)
+			if (CoatShag < 50 && temp > 8)
 			{
 				Bond += 10;
 			}
 			//...but brushing a very shaggy dog will try their patience
-			else if (CoatShag > 7)
+			else if (CoatShag > 70)
 			{
-				Boredom += 5;
+				Boredom += Intelligence;
 
 				if (temp > 8)
 				{
-					Bond -= 5;
+					Bond -= 10;
 				}
 			}
 
 			CoatShag = 0;
-			Boredom += 5;
-			Energy -= 5;
+			Boredom += Intelligence;
+			Energy -= EnergyDecayRate;
+			Console.WriteLine("{0} wiggles under the brush.", Name);
 		}
 
 		//obligatory
 		public void Pet()
 		{
-			Bond += 5;
+			Bond += TricksLearned;
+			Console.WriteLine("{0} leans into your hand.", Name);
 		}
+
+		//treat energy
+		public void Sleep()
+		{
+			Thirst += (short)((100 - Energy) / 4);
+			Hunger += (short)((100 - Energy) / 2);
+			Energy = 100;
+			Console.WriteLine("{0} lets out a quiet sleep-bark.", Name);
+		}
+
+		//display tricks known and tricks not known
+		public void DisplayTricks()
+		{
+			foreach(KeyValuePair<string,bool> kvp in dogTricks)
+			{
+				if (kvp.Value == true)
+				{
+					Console.WriteLine("{0}: known", kvp.Key);
+				}
+				else
+				{
+					Console.WriteLine("{0}: not known", kvp.Key);
+				}
+			}
+			Console.WriteLine();
+		}
+
+		//learn new trick
+		public void LearnTrick()
+		{
+			//first list the tricks
+			DisplayTricks();
+
+			//tired or bored dogs won't learn tricks
+			if (Energy < 70 || Boredom > 60)
+			{
+				Console.WriteLine("{0} is too unfocused to learn right now.", Name);
+			}
+			else if (dogTricks["Play dead"] == true)
+			{
+				Console.WriteLine("Your dog has learned every trick!");
+			}
+			else
+			{
+				//loop through dogTricks until it hits a trick that is unlearned, then decreases trickProgress until
+				//the trick is learned (smart dogs learn faster). Then it sets that trick to true (learned) and increases trick count
+				foreach(KeyValuePair<string,bool> kvp in dogTricks)
+				{
+					if (kvp.Value == false)
+					{
+						TrickProgress -= Intelligence;
+						if (TrickProgress <= 0)
+						{
+							dogTricks[kvp.Key] = true;
+							Console.WriteLine("Your dog has learned the trick {0}!", kvp.Key);
+							TricksLearned++;
+							TrickProgress = 10;
+						}
+						Energy -= (short)(EnergyDecayRate * 5);
+						break;
+					}
+				}
+			}
+		}
+
+		//increment stats when run
+		public void Tick(Object source, ElapsedEventArgs e)
+		{
+			Random rand = new Random();
+			Hunger += (short)HungerDecayRate;
+			Thirst += (short)(rand.Next(5));
+			Boredom += Intelligence;
+			Energy -= EnergyDecayRate;
+			CoatShag += CoatShagDecayRate;
+		}
+
+		//every x seconds the Tick method will trigger
+		public void NeedIncrement(int seconds)
+		{
+			needTimer = new Timer(seconds * 1000);
+			needTimer.Elapsed += Tick;
+			needTimer.AutoReset = true;
+			needTimer.Enabled = true;
+		}
+
 	}
 }

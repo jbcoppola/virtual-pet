@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Timers;
 using System.Threading.Tasks;
 
 namespace VirtualPet
@@ -10,11 +11,16 @@ namespace VirtualPet
 	{
 		static void Main(string[] args)
 		{
-			string input = "";
+			//initial setup
 			Dog dog = Adopt();
-			while (input != "quit")
+			//set timer to 30 seconds
+			dog.NeedIncrement(30);
+
+			//main loop
+			while (true)
 			{
 				dog.DisplayStats();
+				ActionLoop(dog);
 			}
 		}
 
@@ -24,6 +30,7 @@ namespace VirtualPet
 			string input = Console.ReadLine();
 			if (input.ToLower() == "quit")
 			{
+				Console.WriteLine("\"Woof\" (Come back soon)");
 				Environment.Exit(0);
 			}
 			return input;
@@ -55,19 +62,19 @@ namespace VirtualPet
 			switch (breed)
 			{
 				case "1":
-					//labs have medium intelligence, lots of energy, a low maintenence coat and a huge appetite.
+					Console.WriteLine("Labs have medium intelligence, lots of energy, a low maintenence coat and a huge appetite.");
 					dog = new Dog(name, 5, 4, 1, 9);
 					break;
 				case "2":
-					//goldens have medium intelligence, moderate energy, a high maintence long coat and a large appetite.
+					Console.WriteLine("Goldens have medium intelligence, moderate energy, a high maintence long coat and a large appetite.");
 					dog = new Dog(name, 5, 6, 7, 7);
 					break;
 				case "3":
-					//corgis are very intelligent, have lots of energy, a short coat and lower appetite.
+					Console.WriteLine("Corgis are very intelligent, have lots of energy, a short coat and lower appetite.");
 					dog = new Dog(name, 8, 3, 3, 4);
 					break;
 				case "4":
-					//aussies are extremely intelligent, have boatloads of energy, a high maintenence coat and very large appetite
+					Console.WriteLine("Aussies are extremely intelligent, have boatloads of energy, a high maintenence coat and very large appetite");
 					dog = new Dog(name, 10, 1, 10, 8);
 					break;
 				default:
@@ -75,14 +82,72 @@ namespace VirtualPet
 					dog = new Dog(name, 5, 5, 5, 5);
 					break;
 			}
-
 			return dog;
 		}
 
-		static Dog Action(Dog dog)
+		//gives the user their choices of what they can do
+		static void DisplayActionMenu(Dog dog)
 		{
-			string input = GetInput();
-			switch
+			Console.WriteLine("What will you do?");
+			Console.WriteLine();
+			Console.WriteLine("1 - Feed {0}", dog.Name);
+			Console.WriteLine("2 - Fill {0}'s water bowl", dog.Name);
+			Console.WriteLine("3 - Play with {0}", dog.Name);
+			Console.WriteLine("4 - Brush {0}", dog.Name);
+			Console.WriteLine("5 - Take {0} outside", dog.Name);
+			Console.WriteLine("6 - Pet {0}", dog.Name);
+			Console.WriteLine("7 - Put {0} to bed", dog.Name);
+			Console.WriteLine("8 - Teach {0} a trick", dog.Name);
+			Console.WriteLine();
+		}
+
+		//makes sure they pick the correct range of actions
+		static string VerifyAction(string input)
+		{
+			while (	input != "1" && input != "2" && input != "3" && input != "4" && 
+					input != "5" && input != "6" && input != "7" && input != "8"	)
+			{
+				Console.WriteLine("Invalid input. Enter 1-8");
+				input = Console.ReadLine();
+			}
+			return input;
+		}
+
+		//gets input, verifies it and picks an action to take, then checks the values before returning dog
+		static Dog ActionLoop(Dog dog)
+		{
+			DisplayActionMenu(dog);
+			string input = VerifyAction(GetInput());
+			switch (input)
+			{
+				case "1":
+					dog.Feed();
+					break;
+				case "2":
+					dog.GiveWater();
+					break;
+				case "3":
+					dog.Play();
+					break;
+				case "4":
+					dog.Brush();
+					break;
+				case "5":
+					dog.Poop();
+					break;
+				case "6":
+					dog.Pet();
+					break;
+				case "7":
+					dog.Sleep();
+					break;
+				case "8":
+					dog.LearnTrick();
+					break;
+				default:
+					break;
+			}
+			dog.CheckConditions();
 			return dog;
 		}
 	}
