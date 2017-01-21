@@ -30,7 +30,7 @@ namespace VirtualPet
 	{
 		//fields
 		private string name;
-		private short[] dogValues = new short[(int)DogNeeds.last + 1];
+		private short[] dogValues = new short[(int)DogNeeds.last];
 		private Dictionary<string, bool> dogTricks = new Dictionary<string, bool>();
 		private static Timer needTimer;
 
@@ -261,7 +261,7 @@ namespace VirtualPet
 			//dogs bond through playing
 			if (temp > 6)
 			{
-				Bond += 20;
+				Bond += (short)(TricksLearned * 3);
 			}
 			//...but it gets them dirty
 			if (temp > 4)
@@ -287,7 +287,7 @@ namespace VirtualPet
 			//most dogs love being brushed
 			if (CoatShag < 50 && temp > 8)
 			{
-				Bond += 10;
+				Bond += TricksLearned;
 			}
 			//...but brushing a very shaggy dog will try their patience
 			else if (CoatShag > 70)
@@ -356,9 +356,9 @@ namespace VirtualPet
 			}
 			else
 			{
-				//loop through dogTricks until it hits a trick that is unlearned, then decreases trickProgress until
-				//the trick is learned (smart dogs learn faster). Then it sets that trick to true (learned) and increases trick count
-				foreach(KeyValuePair<string,bool> kvp in dogTricks)
+				//loop through dogTricks until it hits a trick that is unlearned, then decreases trickProgress until the 
+				//trick is learned (smart dogs learn faster). Then it sets that trick to true (learned) and increases trick count
+				foreach (KeyValuePair<string,bool> kvp in dogTricks)
 				{
 					if (kvp.Value == false)
 					{
@@ -366,7 +366,7 @@ namespace VirtualPet
 						if (TrickProgress <= 0)
 						{
 							dogTricks[kvp.Key] = true;
-							Console.WriteLine("Your dog has learned the trick {0}!", kvp.Key);
+							Console.WriteLine("Your dog has learned the trick \"{0}\"!", kvp.Key);
 							TricksLearned++;
 							TrickProgress = 10;
 						}
@@ -381,8 +381,8 @@ namespace VirtualPet
 		public void Tick(Object source, ElapsedEventArgs e)
 		{
 			Random rand = new Random();
-			Hunger += (short)HungerDecayRate;
-			Thirst += (short)(rand.Next(5));
+			Hunger += HungerDecayRate;
+			Thirst += (short)rand.Next(5);
 			Boredom += Intelligence;
 			Energy -= EnergyDecayRate;
 			CoatShag += CoatShagDecayRate;
