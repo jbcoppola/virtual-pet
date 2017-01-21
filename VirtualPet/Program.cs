@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Timers;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace VirtualPet
 {
@@ -75,6 +76,8 @@ namespace VirtualPet
 					dog = new Dog(name, 5, 5, 5, 5);
 					break;
 			}
+			Console.WriteLine();
+			DisplayArt(breed);
 			return dog;
 		}
 
@@ -151,6 +154,31 @@ namespace VirtualPet
 			}
 			dog.CheckConditions();
 			return dog;
+		}
+
+		//displays an ASCII art picture from a file
+		static void DisplayArt(int breed)
+		{
+			string fileContents = "";
+			switch (breed)
+			{
+				case 1:
+					fileContents = File.ReadAllText("..\\..\\Lab.txt");
+					break;
+				case 2:
+					fileContents = File.ReadAllText("..\\..\\Golden.txt");
+					break;
+				case 3:
+					fileContents = File.ReadAllText("..\\..\\Corgi.txt");
+					break;
+				case 4:
+					fileContents = File.ReadAllText("..\\..\\Aussie.txt");
+					break;
+				default:
+					break;
+			}
+			Console.WriteLine(fileContents);
+			Console.WriteLine();
 		}
 	}
 }

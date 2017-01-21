@@ -377,7 +377,8 @@ namespace VirtualPet
 			}
 		}
 
-		//increment stats when run
+		//increment stats when run. object source and elapsedeventargs e allow the method to attach itself to 
+		//needIncrement and run after a certain event (x seconds passing)
 		public void Tick(Object source, ElapsedEventArgs e)
 		{
 			Random rand = new Random();
